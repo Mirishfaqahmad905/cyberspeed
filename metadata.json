@@ -1,0 +1,6 @@
+{
+  "name": "CyberSpeed - Internet Speed Test",
+  "description": "A high-performance, real-time internet speed testing suite measuring download, upload, ping, and jitter with dynamic SVG telemetry visualization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
