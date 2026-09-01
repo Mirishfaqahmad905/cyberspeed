@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Clock, History, Trash2, ArrowDown, ArrowUp, Activity, Check, Download } from 'lucide-react';
-import { SpeedTestResult } from '../types';
+import { SpeedTestResult, SpeedUnit } from '../types';
 import { clearStoredHistory, getStoredHistory } from '../utils/speedEngine';
 
 interface HistoryTableProps {
   lastUpdated: number;
+  speedUnit?: SpeedUnit;
   onSelectResult?: (result: SpeedTestResult) => void;
 }
 
 export const HistoryTable: React.FC<HistoryTableProps> = ({
   lastUpdated,
+  speedUnit = 'dual',
   onSelectResult,
 }) => {
   const [history, setHistory] = useState<SpeedTestResult[]>([]);
@@ -39,11 +41,11 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
             <History className="w-3.5 h-3.5" />
           </div>
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-white font-display">
               Recent Benchmark History
             </h3>
             <p className="text-[10px] text-slate-500 font-mono-tech">
-              Last 5 speed tests saved to localStorage
+              Speed tests saved to local history storage
             </p>
           </div>
         </div>
@@ -79,12 +81,16 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                 <th className="pb-2.5">Download</th>
                 <th className="pb-2.5">Upload</th>
                 <th className="pb-2.5">Ping / Jitter</th>
+                <th className="pb-2.5">Duration</th>
                 <th className="pb-2.5">Server Node</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
               {history.map((item) => {
                 const { date, time } = formatDate(item.timestamp);
+                const dKbps = Math.round(item.downloadSpeed * 1000).toLocaleString();
+                const uKbps = Math.round(item.uploadSpeed * 1000).toLocaleString();
+
                 return (
                   <tr
                     key={item.id}
@@ -119,18 +125,28 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                     </td>
 
                     {/* Download */}
-                    <td className="py-2.5 font-bold text-cyan-400">
-                      <div className="flex items-center gap-1">
-                        <ArrowDown className="w-3 h-3 text-cyan-500" />
-                        <span>{item.downloadSpeed.toFixed(1)} Mbps</span>
+                    <td className="py-2.5 text-cyan-400">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-1 font-bold">
+                          <ArrowDown className="w-3 h-3 text-cyan-500" />
+                          <span>{item.downloadSpeed.toFixed(1)} Mbps</span>
+                        </div>
+                        <span className="text-[9px] text-cyan-500/70 ml-4">
+                          {dKbps} Kbps
+                        </span>
                       </div>
                     </td>
 
                     {/* Upload */}
-                    <td className="py-2.5 font-bold text-purple-400">
-                      <div className="flex items-center gap-1">
-                        <ArrowUp className="w-3 h-3 text-purple-500" />
-                        <span>{item.uploadSpeed.toFixed(1)} Mbps</span>
+                    <td className="py-2.5 text-purple-400">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-1 font-bold">
+                          <ArrowUp className="w-3 h-3 text-purple-500" />
+                          <span>{item.uploadSpeed.toFixed(1)} Mbps</span>
+                        </div>
+                        <span className="text-[9px] text-purple-500/70 ml-4">
+                          {uKbps} Kbps
+                        </span>
                       </div>
                     </td>
 
@@ -142,6 +158,13 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                         <span className="text-slate-500">/</span>
                         <span className="text-slate-400">{item.jitter.toFixed(1)} ms</span>
                       </div>
+                    </td>
+
+                    {/* Duration */}
+                    <td className="py-2.5 text-slate-400">
+                      <span className="px-1.5 py-0.5 rounded bg-white/5 text-[10px] text-slate-300 font-bold">
+                        {item.testDurationSeconds === 60 ? '1 Min' : `${item.testDurationSeconds || 30}s`}
+                      </span>
                     </td>
 
                     {/* Server Node */}

@@ -118,9 +118,7 @@ async function measureRealUpload(
           {/* Explanation */}
           <div className="p-3 rounded-lg bg-white/[0.02] border border-white/5 leading-relaxed text-slate-300">
             <p>
-              The current UI uses an interactive network physics simulation engine (modeling TCP slow-start,
-              jitter standard deviation, and packet turbulence). To switch from simulation to real wire telemetry,
-              replace the timer loops in <code className="text-cyan-400">src/hooks/useSpeedTest.ts</code> with the standard Web Streams API methods below:
+              The application now features a <strong>Real-Time Live Network Engine</strong> connected directly to live backend endpoints (<code className="text-cyan-400">/api/ping</code>, <code className="text-cyan-400">/api/download</code>, and <code className="text-cyan-400">/api/upload</code>). When you click <strong>Start Test</strong>, real binary streams are transmitted over your active Wi-Fi / Ethernet link.
             </p>
           </div>
 

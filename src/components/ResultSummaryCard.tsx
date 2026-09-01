@@ -1,21 +1,26 @@
 import React, { useState } from 'react';
-import { Award, CheckCircle2, Copy, Download, Gamepad2, Globe, MonitorPlay, RefreshCw, Share2, Sparkles, Video, Wifi } from 'lucide-react';
-import { SpeedTestResult } from '../types';
+import { Award, CheckCircle2, Copy, Download, Gamepad2, Globe, MonitorPlay, RefreshCw, Share2, Sparkles, Video, Wifi, Clock } from 'lucide-react';
+import { SpeedTestResult, SpeedUnit } from '../types';
 
 interface ResultSummaryCardProps {
   result: SpeedTestResult;
+  speedUnit?: SpeedUnit;
   onRetest: () => void;
 }
 
 export const ResultSummaryCard: React.FC<ResultSummaryCardProps> = ({
   result,
+  speedUnit = 'dual',
   onRetest,
 }) => {
   const [copied, setCopied] = useState(false);
 
+  const downloadKbps = Math.round(result.downloadSpeed * 1000).toLocaleString();
+  const uploadKbps = Math.round(result.uploadSpeed * 1000).toLocaleString();
+
   const handleCopy = () => {
-    const summaryText = `🚀 CyberSpeed Benchmark Results:\n• Download: ${result.downloadSpeed} Mbps (Peak: ${result.peakDownload} Mbps)\n• Upload: ${result.uploadSpeed} Mbps\n• Ping: ${result.ping} ms | Jitter: ${result.jitter} ms\n• Grade: ${result.rating.grade} (${result.rating.title})\n• Server: ${result.server.name} (${result.server.city})\n• Date: ${new Date(result.timestamp).toLocaleString()}`;
-    
+    const summaryText = `🚀 CyberSpeed Benchmark Results:\n• Download: ${result.downloadSpeed} Mbps (${downloadKbps} Kbps)\n• Upload: ${result.uploadSpeed} Mbps (${uploadKbps} Kbps)\n• Ping: ${result.ping} ms | Jitter: ${result.jitter} ms\n• Grade: ${result.rating.grade} (${result.rating.title})\n• Duration: ${result.testDurationSeconds || 60}s\n• Server: ${result.server.name} (${result.server.city})\n• Date: ${new Date(result.timestamp).toLocaleString()}`;
+
     navigator.clipboard.writeText(summaryText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -37,17 +42,28 @@ export const ResultSummaryCard: React.FC<ResultSummaryCardProps> = ({
             {result.rating.grade}
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-lg font-bold text-white font-display uppercase tracking-wide">
                 {result.rating.title}
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[9px] font-bold font-mono-tech bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase tracking-wider">
-                Verified
+                {result.isRealTest !== false ? 'Live Wi-Fi Verified' : 'Simulated Preset'}
               </span>
+              {result.testDurationSeconds && (
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold font-mono-tech bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 uppercase tracking-wider flex items-center gap-1">
+                  <Clock className="w-2.5 h-2.5" />
+                  <span>{result.testDurationSeconds === 60 ? '1-Min Continuous' : `${result.testDurationSeconds}s`}</span>
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-400 mt-0.5 max-w-xl">
               {result.rating.description}
             </p>
+            {result.totalBytesDownloaded && result.totalBytesDownloaded > 0 ? (
+              <p className="text-[10px] text-cyan-400 font-mono-tech mt-1">
+                Transferred: {(result.totalBytesDownloaded / (1024 * 1024)).toFixed(1)} MB downloaded • {result.totalBytesUploaded ? (result.totalBytesUploaded / (1024 * 1024)).toFixed(1) : '0'} MB uploaded
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -82,11 +98,11 @@ export const ResultSummaryCard: React.FC<ResultSummaryCardProps> = ({
         </div>
       </div>
 
-      {/* Main Metrics 4-Col Grid */}
+      {/* Main Metrics 4-Col Grid (With Dual Mbps + Kbps display) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4 border-b border-white/5">
         <div className="p-3 rounded-lg bg-white/[0.02] border border-white/5">
           <span className="text-[10px] font-mono-tech text-slate-400 block mb-1 uppercase tracking-wider">
-            DOWNLOAD
+            DOWNLOAD SPEED
           </span>
           <div className="flex items-baseline gap-1">
             <span className="font-display text-2xl font-black italic text-cyan-400 font-mono-tech">
@@ -94,14 +110,14 @@ export const ResultSummaryCard: React.FC<ResultSummaryCardProps> = ({
             </span>
             <span className="text-xs text-slate-400 font-mono-tech">Mbps</span>
           </div>
-          <span className="text-[10px] text-slate-500 font-mono-tech mt-1 block">
-            Peak: {result.peakDownload.toFixed(1)} Mbps
+          <span className="text-[10px] font-mono-tech text-cyan-300/80 block mt-0.5">
+            {downloadKbps} Kbps
           </span>
         </div>
 
         <div className="p-3 rounded-lg bg-white/[0.02] border border-white/5">
           <span className="text-[10px] font-mono-tech text-slate-400 block mb-1 uppercase tracking-wider">
-            UPLOAD
+            UPLOAD SPEED
           </span>
           <div className="flex items-baseline gap-1">
             <span className="font-display text-2xl font-black italic text-purple-400 font-mono-tech">
@@ -109,14 +125,14 @@ export const ResultSummaryCard: React.FC<ResultSummaryCardProps> = ({
             </span>
             <span className="text-xs text-slate-400 font-mono-tech">Mbps</span>
           </div>
-          <span className="text-[10px] text-slate-500 font-mono-tech mt-1 block">
-            Peak: {result.peakUpload.toFixed(1)} Mbps
+          <span className="text-[10px] font-mono-tech text-purple-300/80 block mt-0.5">
+            {uploadKbps} Kbps
           </span>
         </div>
 
         <div className="p-3 rounded-lg bg-white/[0.02] border border-white/5">
           <span className="text-[10px] font-mono-tech text-slate-400 block mb-1 uppercase tracking-wider">
-            LATENCY / PING
+            LATENCY (PING)
           </span>
           <div className="flex items-baseline gap-1">
             <span className="font-display text-2xl font-black italic text-amber-400 font-mono-tech">
@@ -124,14 +140,14 @@ export const ResultSummaryCard: React.FC<ResultSummaryCardProps> = ({
             </span>
             <span className="text-xs text-slate-400 font-mono-tech">ms</span>
           </div>
-          <span className="text-[10px] text-slate-500 font-mono-tech mt-1 block">
-            {result.ping < 20 ? 'Optimal for Gaming' : 'Normal latency'}
+          <span className="text-[10px] font-mono-tech text-slate-400 block mt-0.5">
+            {result.ping < 20 ? 'Optimal for Gaming' : 'Standard Latency'}
           </span>
         </div>
 
         <div className="p-3 rounded-lg bg-white/[0.02] border border-white/5">
           <span className="text-[10px] font-mono-tech text-slate-400 block mb-1 uppercase tracking-wider">
-            JITTER
+            PACKET JITTER
           </span>
           <div className="flex items-baseline gap-1">
             <span className="font-display text-2xl font-black italic text-amber-400 font-mono-tech">
@@ -139,106 +155,57 @@ export const ResultSummaryCard: React.FC<ResultSummaryCardProps> = ({
             </span>
             <span className="text-xs text-slate-400 font-mono-tech">ms</span>
           </div>
-          <span className="text-[10px] text-slate-500 font-mono-tech mt-1 block">
-            {result.jitter < 4 ? 'Minimal variance' : 'Slight jitter'}
+          <span className="text-[10px] font-mono-tech text-slate-400 block mt-0.5">
+            {result.jitter < 3 ? 'Ultra Stable' : 'Moderate Jitter'}
           </span>
         </div>
       </div>
 
-      {/* Practical Application Capability Breakdown */}
+      {/* Real-World Experience Capability Matrix */}
       <div className="pt-4">
-        <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono-tech mb-3 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Real-World Broadband Suitability</span>
-        </h4>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Gaming */}
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02] border border-white/5">
-            <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mt-0.5">
-              <Gamepad2 className="w-3.5 h-3.5" />
+        <h3 className="text-xs font-mono-tech uppercase font-bold text-slate-400 tracking-wider mb-3">
+          Real-World Wi-Fi Capability Breakdown
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex items-center gap-3">
+            <div className="p-2 rounded-md bg-cyan-500/10 text-cyan-400">
+              <Gamepad2 className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-semibold text-white block">
-                Competitive Gaming
-              </span>
-              <span className="text-xs font-medium text-emerald-400 font-mono-tech">
-                {result.rating.gaming}
-              </span>
-              <span className="text-[10px] text-slate-500 block mt-0.5">
-                Ping under {result.ping}ms ensures crisp hit registration.
-              </span>
+              <span className="text-[10px] text-slate-400 font-mono-tech block">Online Gaming</span>
+              <span className="font-bold text-slate-200">{result.rating.gaming}</span>
             </div>
           </div>
 
-          {/* 4K/8K Streaming */}
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02] border border-white/5">
-            <div className="p-1.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mt-0.5">
-              <MonitorPlay className="w-3.5 h-3.5" />
+          <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex items-center gap-3">
+            <div className="p-2 rounded-md bg-purple-500/10 text-purple-400">
+              <MonitorPlay className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-semibold text-white block">
-                Video Streaming
-              </span>
-              <span className="text-xs font-medium text-cyan-400 font-mono-tech">
-                {result.rating.streaming}
-              </span>
-              <span className="text-[10px] text-slate-500 block mt-0.5">
-                Bitrate supports multiple simultaneous 4K streams.
-              </span>
+              <span className="text-[10px] text-slate-400 font-mono-tech block">Video Streaming</span>
+              <span className="font-bold text-slate-200">{result.rating.streaming}</span>
             </div>
           </div>
 
-          {/* Video Conferencing */}
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02] border border-white/5">
-            <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20 mt-0.5">
-              <Video className="w-3.5 h-3.5" />
+          <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex items-center gap-3">
+            <div className="p-2 rounded-md bg-emerald-500/10 text-emerald-400">
+              <Video className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-semibold text-white block">
-                Video Conferencing
-              </span>
-              <span className="text-xs font-medium text-purple-400 font-mono-tech">
-                {result.rating.videoCalls}
-              </span>
-              <span className="text-[10px] text-slate-500 block mt-0.5">
-                Crystal-clear HD meetings with low delay.
-              </span>
+              <span className="text-[10px] text-slate-400 font-mono-tech block">Conference Calls</span>
+              <span className="font-bold text-slate-200">{result.rating.videoCalls}</span>
             </div>
           </div>
 
-          {/* Large Downloads */}
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02] border border-white/5">
-            <div className="p-1.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 mt-0.5">
-              <Download className="w-3.5 h-3.5" />
+          <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex items-center gap-3">
+            <div className="p-2 rounded-md bg-amber-500/10 text-amber-400">
+              <Download className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-xs font-semibold text-white block">
-                50GB File DL
-              </span>
-              <span className="text-xs font-medium text-blue-400 font-mono-tech">
-                {result.rating.largeDownloads}
-              </span>
-              <span className="text-[10px] text-slate-500 block mt-0.5">
-                Estimated speed for high-volume payloads.
-              </span>
+              <span className="text-[10px] text-slate-400 font-mono-tech block">File Transfers</span>
+              <span className="font-bold text-slate-200">{result.rating.largeDownloads}</span>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Server & Node Metadata Footer */}
-      <div className="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono-tech text-slate-500">
-        <div className="flex items-center gap-2">
-          <span>Server:</span>
-          <span className="text-slate-300 font-medium">
-            {result.server.flag} {result.server.name} ({result.server.city})
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span>ISP: <strong className="text-slate-300">{result.connection.isp}</strong></span>
-          <span>•</span>
-          <span>IP: <strong className="text-slate-300">{result.connection.ip}</strong></span>
         </div>
       </div>
     </div>

@@ -2,6 +2,17 @@ import { ConnectionInfo, DataPoint, NetworkProfilePreset, PerformanceRating, Ser
 
 export const SERVERS: ServerNode[] = [
   {
+    id: 'live-local',
+    name: 'Direct Live Wire (Nearest Edge)',
+    sponsor: 'Active Client Socket / Real Telemetry',
+    city: 'Nearest Active Node',
+    country: 'Live Link',
+    flag: '⚡',
+    distanceKm: 2,
+    basePingMs: 2,
+    isRealLocalServer: true,
+  },
+  {
     id: 'edge-sfo',
     name: 'San Francisco Edge-01',
     sponsor: 'Cloudflare / Fastly Mesh',
@@ -64,12 +75,13 @@ export const SERVERS: ServerNode[] = [
 ];
 
 export const DEFAULT_CONNECTION: ConnectionInfo = {
-  ip: '198.51.100.84',
-  isp: 'Starlink / Fiber Optic Ultra Tier',
-  protocol: 'IPv6 / HTTP3 (QUIC)',
-  city: 'San Francisco',
-  country: 'United States',
-  clientType: 'Gigabit LAN (1000BASE-T)',
+  ip: 'Detecting live IP...',
+  isp: 'Active Local Wi-Fi / Broadband',
+  protocol: 'HTTPS / TLS 1.3',
+  city: 'Detected Location',
+  country: 'Live Online',
+  clientType: 'Wi-Fi / Ethernet Connection',
+  isLiveDetected: false,
 };
 
 export interface ProfileConfig {

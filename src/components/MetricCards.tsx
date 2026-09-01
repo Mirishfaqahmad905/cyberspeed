@@ -1,15 +1,16 @@
 import React from 'react';
 import { Activity, ArrowDown, ArrowUp, Zap } from 'lucide-react';
-import { TestStage } from '../types';
+import { SpeedUnit, TestStage } from '../types';
 
 interface MetricCardsProps {
   stage: TestStage;
-  downloadSpeed: number;
-  uploadSpeed: number;
+  downloadSpeed: number; // in Mbps
+  uploadSpeed: number; // in Mbps
   ping: number;
   jitter: number;
   peakDownload: number;
   peakUpload: number;
+  speedUnit?: SpeedUnit;
 }
 
 export const MetricCards: React.FC<MetricCardsProps> = ({
@@ -20,7 +21,30 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
   jitter,
   peakDownload,
   peakUpload,
+  speedUnit = 'dual',
 }) => {
+  // Download values
+  const downloadDisplay =
+    downloadSpeed > 0
+      ? speedUnit === 'kbps'
+        ? Math.round(downloadSpeed * 1000).toLocaleString()
+        : downloadSpeed.toFixed(1)
+      : '--';
+
+  const downloadKbps = downloadSpeed > 0 ? Math.round(downloadSpeed * 1000).toLocaleString() : null;
+
+  // Upload values
+  const uploadDisplay =
+    uploadSpeed > 0
+      ? speedUnit === 'kbps'
+        ? Math.round(uploadSpeed * 1000).toLocaleString()
+        : uploadSpeed.toFixed(1)
+      : '--';
+
+  const uploadKbps = uploadSpeed > 0 ? Math.round(uploadSpeed * 1000).toLocaleString() : null;
+
+  const unitLabel = speedUnit === 'kbps' ? 'Kbps' : 'Mbps';
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 w-full">
       {/* 1. PING / LATENCY */}
@@ -129,16 +153,21 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
         <div className="my-2">
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-black italic tracking-tight text-cyan-300 font-mono-tech tabular-nums">
-              {downloadSpeed > 0 ? downloadSpeed.toFixed(1) : '--'}
+              {downloadDisplay}
             </span>
             <span className="text-xs font-bold text-cyan-400 font-mono-tech">
-              Mbps
+              {unitLabel}
             </span>
           </div>
+          {speedUnit === 'dual' && downloadKbps && (
+            <span className="text-[10px] font-mono-tech text-cyan-400/80 block mt-0.5">
+              ≈ {downloadKbps} Kbps
+            </span>
+          )}
         </div>
 
         <div className="flex items-center justify-between text-[10px] font-mono-tech text-slate-500 border-t border-white/[0.04] pt-2">
-          <span>Peak: {peakDownload > 0 ? `${peakDownload.toFixed(1)}` : '--'}</span>
+          <span>Peak: {peakDownload > 0 ? `${peakDownload.toFixed(1)} Mbps` : '--'}</span>
           <span className="text-cyan-400">Multi-Stream</span>
         </div>
       </div>
@@ -169,20 +198,24 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
         <div className="my-2">
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-black italic tracking-tight text-purple-300 font-mono-tech tabular-nums">
-              {uploadSpeed > 0 ? uploadSpeed.toFixed(1) : '--'}
+              {uploadDisplay}
             </span>
             <span className="text-xs font-bold text-purple-400 font-mono-tech">
-              Mbps
+              {unitLabel}
             </span>
           </div>
+          {speedUnit === 'dual' && uploadKbps && (
+            <span className="text-[10px] font-mono-tech text-purple-400/80 block mt-0.5">
+              ≈ {uploadKbps} Kbps
+            </span>
+          )}
         </div>
 
         <div className="flex items-center justify-between text-[10px] font-mono-tech text-slate-500 border-t border-white/[0.04] pt-2">
-          <span>Peak: {peakUpload > 0 ? `${peakUpload.toFixed(1)}` : '--'}</span>
+          <span>Peak: {peakUpload > 0 ? `${peakUpload.toFixed(1)} Mbps` : '--'}</span>
           <span className="text-purple-400">Payload Chunk</span>
         </div>
       </div>
     </div>
   );
 };
-
